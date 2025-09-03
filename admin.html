@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel - Denji</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div class="container" id="loginContainer">
+    <h1>Admin Login</h1>
+    <input type="text" id="adminUsername" placeholder="Username" />
+    <input type="password" id="adminCode" placeholder="Code" />
+    <button id="loginBtn">Login</button>
+  </div>
+
+  <div class="container" id="panelContainer" style="display:none;">
+    <h1>Admin Panel</h1>
+
+    <input type="date" id="adminBirthdate" />
+    <input type="text" id="adminName" placeholder="Name" />
+    <textarea id="adminMessage" placeholder="Message"></textarea>
+    <input type="text" id="adminImageUrl" placeholder="Image URL" />
+    <button id="saveBirthdayBtn">Save Birthday</button>
+
+    <h2>Existing Birthdays</h2>
+    <div id="birthdaysList"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCTDr-9G3NobcbFsTdKw2HqrbEVaMx5cXM",
+      authDomain: "denji-62e31.firebaseapp.com",
+      projectId: "denji-62e31",
+      storageBucket: "denji-62e31.firebasestorage.app",
+      messagingSenderId: "938613666611",
+      appId: "1:938613666611:web:911306ad11b52bf0f04446"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const correctUsername = "denji"; // غير تبدل هنا
+    const correctCode = "1234";      // غير تبدل هنا
+
+    const loginContainer = document.getElementById("loginContainer");
+    const panelContainer = document.getElementById("panelContainer");
+    const loginBtn = document.getElementById("loginBtn");
+
+    loginBtn.addEventListener("click", () => {
+      const username = document.getElementById("adminUsername").value.trim();
+      const code = document.getElementById("adminCode").value.trim();
+      if (username === correctUsername && code === correctCode) {
+        loginContainer.style.display = "none";
+        panelContainer.style.display = "block";
+        loadBirthdays();
+      } else alert("Incorrect username or code!");
+    });
+
+    const birthdateInput = document.getElementById("adminBirthdate");
+    const nameInput = document.getElementById("adminName");
+    const messageInput = document.getElementById("adminMessage");
+    const imageUrlInput = document.getElementById("adminImageUrl");
+    const saveBtn = document.getElementById("saveBirthdayBtn");
+    const birthdaysList = document.getElementById("birthdaysList");
+
+    saveBtn.addEventListener("click", async () => {
+      const date = birthdateInput.value;
+      const name = nameInput.value.trim();
+      const message = messageInput.value.trim();
+      const imageUrl = imageUrlInput.value.trim();
+      if (!date || !name || !message) return alert("Fill all fields!");
+      await setDoc(doc(db, "birthdays", date), { name, message, imageUrl });
+      alert("Birthday saved ✅");
+      loadBirthdays();
+    });
+
+    async function loadBirthdays() {
+      birthdaysList.innerHTML = "";
+      const snapshot = await getDocs(collection(db, "birthdays"));
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        birthdaysList.innerHTML += `<div>
+          <strong>${docSnap.id}</strong>: ${data.name} - ${data.message} 
+          ${data.imageUrl ? `<img src="${data.imageUrl}" alt="" style="max-width:50px;">` : ""}
+        </div>`;
+      });
+    }
+  </script>
+</body>
+</html>

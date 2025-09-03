@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your Special Message</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div class="container" id="messageContainer">
+    <h1>Your Birthday Message</h1>
+    <div id="birthdayMessage"></div>
+    <div id="birthdayImage"></div>
+
+    <h2>Leave a message for Denji</h2>
+    <textarea id="visitorMessage" placeholder="Write your message here..." rows="4"></textarea>
+    <button id="sendMessageBtn">Send Message</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCTDr-9G3NobcbFsTdKw2HqrbEVaMx5cXM",
+      authDomain: "denji-62e31.firebaseapp.com",
+      projectId: "denji-62e31",
+      storageBucket: "denji-62e31.firebasestorage.app",
+      messagingSenderId: "938613666611",
+      appId: "1:938613666611:web:911306ad11b52bf0f04446"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const birthdate = localStorage.getItem("userBirthdate");
+
+    async function loadBirthdayMessage() {
+      if (!birthdate) return;
+
+      const ref = doc(db, "birthdays", birthdate);
+      const snapshot = await getDoc(ref);
+
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        document.getElementById("birthdayMessage").innerText = data.message || "No message found.";
+        if (data.imageUrl) document.getElementById("birthdayImage").innerHTML = `<img src="${data.imageUrl}" alt="Birthday" style="max-width:300px;margin-top:10px;" />`;
+      } else {
+        document.getElementById("birthdayMessage").innerText = "No message found for this date.";
+      }
+    }
+    loadBirthdayMessage();
+
+    document.getElementById("sendMessageBtn").addEventListener("click", async () => {
+      const feedbackText = document.getElementById("visitorMessage").value.trim();
+      if (!feedbackText) return alert("Please write a message first!");
+
+      await addDoc(collection(db, "feedback"), {
+        birthdate,
+        feedback: feedbackText,
+        timestamp: new Date().toISOString()
+      });
+
+      alert("Your message has been sent!");
+      document.getElementById("visitorMessage").value = "";
+    });
+  </script>
+</body>
+</html>
