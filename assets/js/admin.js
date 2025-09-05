@@ -1,5 +1,5 @@
 const ADMIN_USERNAME = "denji";
-const ADMIN_PASSWORD = "1234";
+const ADMIN_PASSWORD = "******";
 
 const loginContainer = document.getElementById("loginContainer");
 const adminPanel = document.getElementById("adminPanel");
@@ -83,3 +83,4 @@ function loadVisitorMessages() {
     visitorLogsDiv.appendChild(p);
   });
 }
+
